@@ -20,6 +20,22 @@ export function ContextPanel({
   const setToolText = useContextStore((s) => s.setToolText);
   const setSelectedTool = useContextStore((s) => s.setSelectedTool);
   const reset = useContextStore((s) => s.reset);
+  const toggleRuntimeToolsDisabled = useContextStore(
+    (s) => s.toggleRuntimeToolsDisabled,
+  );
+
+  const runtimeToolsDisabled = (() => {
+    try {
+      const parsed = JSON.parse(runtimeText);
+      return (
+        parsed != null &&
+        typeof parsed === "object" &&
+        (parsed as { tools?: unknown }).tools === "disabled"
+      );
+    } catch {
+      return false;
+    }
+  })();
 
   if (collapsed) {
     return (
@@ -67,9 +83,24 @@ export function ContextPanel({
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
         <section className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Runtime context
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Runtime context
+            </label>
+            <button
+              type="button"
+              onClick={toggleRuntimeToolsDisabled}
+              disabled={runtimeError !== null}
+              aria-pressed={runtimeToolsDisabled}
+              className={
+                runtimeToolsDisabled
+                  ? "rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive ring-1 ring-destructive/30 disabled:opacity-40"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent rounded-full border px-2 py-0.5 text-xs disabled:opacity-40"
+              }
+            >
+              Tools: {runtimeToolsDisabled ? "disabled" : "enabled"}
+            </button>
+          </div>
           <textarea
             value={runtimeText}
             onChange={(e) => setRuntimeText(e.target.value)}

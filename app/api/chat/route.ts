@@ -46,10 +46,6 @@ export async function POST(req: Request) {
         console.log("prepareStep runtimeContext:", runtimeContext);
         console.log("prepareStep toolsContext:", toolsContext);
 
-        console.log("rest")
-        console.log(rest)
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
         const toolsFlag = (runtimeContext as { tools?: string } | undefined)
           ?.tools;
         const toolsDisabled = toolsFlag === "disabled";
