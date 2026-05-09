@@ -50,8 +50,17 @@ export async function POST(req: Request) {
         console.log(rest)
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
+        const toolsFlag = (runtimeContext as { tools?: string } | undefined)
+          ?.tools;
+        const toolsDisabled = toolsFlag === "disabled";
+
+        if (toolsDisabled) {
+          console.log("tools disabled by runtimeContext.tools === 'disabled'");
+        }
+
         return {
           runtimeContext,
+          ...(toolsDisabled ? { activeTools: [] as const } : {}),
         };
       },
     });
