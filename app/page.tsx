@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { Thread } from "@/components/assistant-ui/thread";
 import { LogPanel } from "@/components/log-panel";
+import { ContextPanel } from "@/components/context-panel";
 import {
   AssistantRuntimeProvider,
   useAui,
@@ -9,7 +11,9 @@ import {
   Suggestions,
 } from "@assistant-ui/react";
 import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
+import { DefaultChatTransport } from "ai";
 import { useLogStore } from "@/lib/log-store";
+import { useContextStore } from "@/lib/context-store";
 
 function ThreadWithSuggestions() {
   const aui = useAui({
@@ -34,7 +38,29 @@ function ThreadWithSuggestions() {
 }
 
 export default function Home() {
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        prepareSendMessagesRequest: async (opts) => {
+          const snap = useContextStore.getState().snapshotForSend();
+          if ("error" in snap) {
+            throw new Error(snap.error);
+          }
+          return {
+            body: {
+              ...opts.body,
+              runtimeContext: snap.runtimeContext,
+              toolsContext: snap.toolsContext,
+            },
+          };
+        },
+      }),
+    [],
+  );
+
   const runtime = useChatRuntime({
+    transport: transport as never,
     onData: (part) => {
       if (part.type === "data-log") {
         useLogStore
@@ -47,6 +73,9 @@ export default function Home() {
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <div className="flex h-full">
+        <aside className="w-80 shrink-0 border-r">
+          <ContextPanel />
+        </aside>
         <div className="min-w-0 flex-1">
           <ThreadWithSuggestions />
         </div>

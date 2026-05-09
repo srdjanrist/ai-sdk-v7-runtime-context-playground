@@ -4,11 +4,11 @@ import {
   type JSONSchema7,
   streamText,
   convertToModelMessages,
-  tool,
   stepCountIs,
 } from "ai";
-import { z } from "zod";
 import { streamWithLogs, type MyUIMessage } from "@/lib/log-stream";
+import { defaultRuntimeContext } from "@/lib/runtime-defaults";
+import { defaultToolsContext, toolsForStreamText } from "@/lib/tools";
 
 export const maxDuration = 30;
 
@@ -17,10 +17,14 @@ export async function POST(req: Request) {
     messages,
     system,
     tools,
+    runtimeContext,
+    toolsContext,
   }: {
     messages: MyUIMessage[];
     system?: string;
     tools?: Record<string, { description?: string; parameters: JSONSchema7 }>;
+    runtimeContext?: Record<string, unknown>;
+    toolsContext?: Record<string, Record<string, unknown>>;
   } = await req.json();
 
   return streamWithLogs(async (writer) => {
@@ -31,43 +35,11 @@ export async function POST(req: Request) {
       stopWhen: stepCountIs(10),
       tools: {
         ...frontendTools(tools ?? {}),
-        get_current_weather: tool({
-          description: "Get the weather in a location",
-          inputSchema: z.object({
-            location: z
-              .string()
-              .describe("The location to get the weather for"),
-          }),
-          contextSchema: z.object({
-            weatherApiKey: z
-              .string()
-              .describe("The API key for the weather API"),
-          }),
-          execute: async (
-            { location },
-            { toolCallId, messages, abortSignal, context },
-          ) => {
-            const { weatherApiKey } = context;
-
-            console.log("tool call:", toolCallId);
-            console.log("messages available to tool:", messages.length);
-            console.log("abortable:", abortSignal != null);
-            console.log("weather tool api key:", weatherApiKey);
-
-            return {
-              location,
-              temperature: 72 + Math.floor(Math.random() * 21) - 10,
-            };
-          },
-        }),
+        ...toolsForStreamText,
       },
-      runtimeContext: {
-        somethingElse: "other-context",
-      },
-      toolsContext: {
-        get_current_weather: {
-          weatherApiKey: "weather-123",
-        },
+      runtimeContext: runtimeContext ?? defaultRuntimeContext,
+      toolsContext: (toolsContext ?? defaultToolsContext) as {
+        get_current_weather: { weatherApiKey: string };
       },
       prepareStep: async ({ runtimeContext, toolsContext }) => {
         console.log("prepareStep runtimeContext:", runtimeContext);
