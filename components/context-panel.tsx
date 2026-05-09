@@ -1,9 +1,16 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useContextStore } from "@/lib/context-store";
 import { toolNames } from "@/lib/tools";
 
-export function ContextPanel() {
+export function ContextPanel({
+  collapsed,
+  onToggleCollapsedAction,
+}: {
+  collapsed: boolean;
+  onToggleCollapsedAction: () => void;
+}) {
   const runtimeText = useContextStore((s) => s.runtimeText);
   const runtimeError = useContextStore((s) => s.runtimeError);
   const toolTexts = useContextStore((s) => s.toolTexts);
@@ -12,14 +19,50 @@ export function ContextPanel() {
   const setRuntimeText = useContextStore((s) => s.setRuntimeText);
   const setToolText = useContextStore((s) => s.setToolText);
   const setSelectedTool = useContextStore((s) => s.setSelectedTool);
+  const reset = useContextStore((s) => s.reset);
+
+  if (collapsed) {
+    return (
+      <div className="bg-sidebar text-sidebar-foreground flex h-full flex-col items-center py-2">
+        <button
+          onClick={onToggleCollapsedAction}
+          aria-label="Expand context panel"
+          className="hover:bg-accent rounded-md p-1.5"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+        <span
+          className="text-muted-foreground mt-3 text-xs uppercase tracking-wider"
+          style={{ writingMode: "vertical-rl" }}
+        >
+          Context
+        </span>
+      </div>
+    );
+  }
 
   const currentToolText = toolTexts[selectedTool] ?? "";
   const currentToolError = toolErrors[selectedTool] ?? null;
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="sticky top-0 border-b px-3 py-2">
-        <span className="text-sm font-medium">Context</span>
+      <div className="sticky top-0 flex items-center justify-between border-b px-3 py-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Context</span>
+          <button
+            onClick={reset}
+            className="text-muted-foreground hover:text-foreground text-xs"
+          >
+            Reset
+          </button>
+        </div>
+        <button
+          onClick={onToggleCollapsedAction}
+          aria-label="Collapse context panel"
+          className="hover:bg-accent rounded-md p-1"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">

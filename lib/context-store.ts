@@ -31,6 +31,7 @@ type State = {
   setRuntimeText: (v: string) => void;
   setToolText: (name: string, v: string) => void;
   setSelectedTool: (name: string) => void;
+  reset: () => void;
   snapshotForSend: () => Snapshot;
 };
 
@@ -62,6 +63,17 @@ export const useContextStore = create<State>((set, get) => ({
   },
 
   setSelectedTool: (name) => set({ selectedTool: name }),
+
+  reset: () =>
+    set({
+      runtimeText: stringify(defaultRuntimeContext),
+      runtimeError: null,
+      toolTexts: Object.fromEntries(
+        Object.entries(defaultToolsContext).map(([n, v]) => [n, stringify(v)]),
+      ),
+      toolErrors: Object.fromEntries(toolNames.map((n) => [n, null])),
+      selectedTool: toolNames[0] ?? "",
+    }),
 
   snapshotForSend: () => {
     const s = get();

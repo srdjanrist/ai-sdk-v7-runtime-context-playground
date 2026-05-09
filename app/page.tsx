@@ -43,6 +43,7 @@ const LOG_PANEL_DEFAULT = 384;
 
 export default function Home() {
   const [logPanelWidth, setLogPanelWidth] = useState(LOG_PANEL_DEFAULT);
+  const [contextCollapsed, setContextCollapsed] = useState(false);
   const draggingRef = useRef(false);
 
   useEffect(() => {
@@ -111,8 +112,13 @@ export default function Home() {
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <div className="flex h-full">
-        <aside className="w-80 shrink-0 border-r">
-          <ContextPanel />
+        <aside
+          className={`shrink-0 border-r ${contextCollapsed ? "w-10" : "w-80"}`}
+        >
+          <ContextPanel
+            collapsed={contextCollapsed}
+            onToggleCollapsedAction={() => setContextCollapsed((c) => !c)}
+          />
         </aside>
         <div className="min-w-0 flex-1">
           <ThreadWithSuggestions />

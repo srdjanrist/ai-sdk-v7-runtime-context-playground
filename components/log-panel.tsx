@@ -11,6 +11,7 @@ function formatTime(ts: number): string {
 
 export function LogPanel() {
   const logs = useLogStore((s) => s.logs);
+  const clear = useLogStore((s) => s.clear);
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
 
@@ -31,7 +32,16 @@ export function LogPanel() {
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="sticky top-0 flex items-center justify-between border-b px-3 py-2">
         <span className="text-sm font-medium">Backend logs</span>
-        <span className="text-muted-foreground text-xs">{logs.length}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground text-xs">{logs.length}</span>
+          <button
+            onClick={clear}
+            disabled={logs.length === 0}
+            className="text-muted-foreground hover:text-foreground disabled:hover:text-muted-foreground text-xs disabled:opacity-40"
+          >
+            Clear
+          </button>
+        </div>
       </div>
       <div
         ref={scrollRef}
