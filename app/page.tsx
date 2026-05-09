@@ -1,6 +1,7 @@
 "use client";
 
 import { Thread } from "@/components/assistant-ui/thread";
+import { LogPanel } from "@/components/log-panel";
 import {
   AssistantRuntimeProvider,
   useAui,
@@ -8,6 +9,7 @@ import {
   Suggestions,
 } from "@assistant-ui/react";
 import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
+import { useLogStore } from "@/lib/log-store";
 
 function ThreadWithSuggestions() {
   const aui = useAui({
@@ -32,12 +34,25 @@ function ThreadWithSuggestions() {
 }
 
 export default function Home() {
-  const runtime = useChatRuntime();
+  const runtime = useChatRuntime({
+    onData: (part) => {
+      if (part.type === "data-log") {
+        useLogStore
+          .getState()
+          .append(part.data as { text: string; ts: number });
+      }
+    },
+  });
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="h-full">
-        <ThreadWithSuggestions />
+      <div className="flex h-full">
+        <div className="min-w-0 flex-1">
+          <ThreadWithSuggestions />
+        </div>
+        <aside className="w-96 shrink-0 border-l">
+          <LogPanel />
+        </aside>
       </div>
     </AssistantRuntimeProvider>
   );
