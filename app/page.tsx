@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Thread } from "@/components/assistant-ui/thread";
 import { LogPanel } from "@/components/log-panel";
 import { ContextPanel } from "@/components/context-panel";
@@ -37,7 +37,41 @@ function ThreadWithSuggestions() {
   );
 }
 
+const LOG_PANEL_MIN = 240;
+const LOG_PANEL_MAX = 800;
+const LOG_PANEL_DEFAULT = 384;
+
 export default function Home() {
+  const [logPanelWidth, setLogPanelWidth] = useState(LOG_PANEL_DEFAULT);
+  const draggingRef = useRef(false);
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (!draggingRef.current) return;
+      const next = window.innerWidth - e.clientX;
+      setLogPanelWidth(Math.max(LOG_PANEL_MIN, Math.min(LOG_PANEL_MAX, next)));
+    };
+    const onUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, []);
+
+  const onHandlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    draggingRef.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -79,7 +113,16 @@ export default function Home() {
         <div className="min-w-0 flex-1">
           <ThreadWithSuggestions />
         </div>
-        <aside className="w-96 shrink-0 border-l">
+        <div
+          onPointerDown={onHandlePointerDown}
+          role="separator"
+          aria-orientation="vertical"
+          className="hover:bg-primary/40 w-1 shrink-0 cursor-col-resize bg-transparent transition-colors"
+        />
+        <aside
+          className="shrink-0 border-l"
+          style={{ width: logPanelWidth }}
+        >
           <LogPanel />
         </aside>
       </div>
