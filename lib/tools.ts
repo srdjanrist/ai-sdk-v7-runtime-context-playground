@@ -19,7 +19,6 @@ export const toolRegistry = {
 
         console.log("tool call:", toolCallId);
         console.log("messages available to tool:", messages.length);
-        console.log("abortable:", abortSignal != null);
         console.log("weather tool api key:", weatherApiKey);
 
         return {

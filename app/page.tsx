@@ -84,6 +84,10 @@ export default function Home() {
           return {
             body: {
               ...opts.body,
+              id: opts.id,
+              messages: opts.messages,
+              trigger: opts.trigger,
+              messageId: opts.messageId,
               runtimeContext: snap.runtimeContext,
               toolsContext: snap.toolsContext,
             },
