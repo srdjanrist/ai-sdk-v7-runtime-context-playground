@@ -41,10 +41,13 @@ export async function POST(req: Request) {
       toolsContext: (toolsContext ?? defaultToolsContext) as {
         get_current_weather: { weatherApiKey: string };
       },
-      prepareStep: async ({ runtimeContext, toolsContext }) => {
+      prepareStep: async (all) => {
+        const { runtimeContext, toolsContext, ...rest } = all;
         console.log("prepareStep runtimeContext:", runtimeContext);
         console.log("prepareStep toolsContext:", toolsContext);
 
+        console.log("rest")
+        console.log(rest)
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         return {
