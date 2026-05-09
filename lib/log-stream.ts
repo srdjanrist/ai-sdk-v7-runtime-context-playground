@@ -19,7 +19,7 @@ const originalLog = console.log.bind(console);
 function formatArg(arg: unknown): string {
   if (typeof arg === "string") return arg;
   try {
-    return JSON.stringify(arg);
+    return JSON.stringify(arg, null, 2);
   } catch {
     return String(arg);
   }
